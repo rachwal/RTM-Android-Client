@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <string name="pref_header_device">Device</string>
+    <string name="pref_title_streaming">Streaming</string>
+    <string name="pref_title_select_camera">Camera</string>
+    <string-array name="pref_cameras_list_titles">
+        <item>Front</item>
+        <item>Back</item>
+    </string-array>
+    <string-array name="pref_cameras_list_values">
+        <item>1</item>
+        <item>0</item>
+    </string-array>
+
+    <string name="pref_header_video_size">Video Size</string>
+    <string name="pref_title_select_video_size">Select</string>
+    <string-array name="pref_video_size_list_titles">
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+    </string-array>
+    <string-array name="pref_video_size_list_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string name="pref_header_video_quality">Video Quality</string>
+    <string name="pref_title_select_video_quality">Select</string>
+    <string-array name="pref_video_quality_list_titles">
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+    </string-array>
+    <string-array name="pref_video_quality_list_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string name="pref_header_component_address">Component Address</string>
+    <string name="pref_title_host_address">Host address</string>
+    <string name="host_key">host_address_key</string>
+    <string name="pref_default_host_address">Enter host address</string>
+    <string name="pref_title_port_number">Port</string>
+    <string name="port_key">port_number_key</string>
+    <string name="pref_default_port_number">9000</string>
+
+</resources>

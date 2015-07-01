@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">RTM Client</string>
+    <string name="streaming_key">streaming_key</string>
+    <string name="camera_key">camera_key</string>
+    <string name="video_size_key">video_size_key</string>
+    <string name="video_quality_key">video_quality_key</string>
+</resources>
