@@ -26,7 +26,7 @@
         <ListPreference
             android:key="@string/video_size_key"
             android:title="@string/pref_title_select_video_size"
-            android:defaultValue="1"
+            android:defaultValue="0"
             android:entries="@array/pref_video_size_list_titles"
             android:entryValues="@array/pref_video_size_list_values"
             android:negativeButtonText="@null"
@@ -40,7 +40,7 @@
         <ListPreference
             android:key="@string/video_quality_key"
             android:title="@string/pref_title_select_video_quality"
-            android:defaultValue="0"
+            android:defaultValue="1"
             android:entries="@array/pref_video_quality_list_titles"
             android:entryValues="@array/pref_video_quality_list_values"
             android:negativeButtonText="@null"

@@ -4,4 +4,6 @@
     <string name="camera_key">camera_key</string>
     <string name="video_size_key">video_size_key</string>
     <string name="video_quality_key">video_quality_key</string>
+    <string name="copyrights">Created by Bartosz Rachwal. Copyright (c) 2015 The National Institute of Advanced Industrial Science and Technology, Japan. All rights reserved.</string>
+    <string name="camera_preview_description">Live Preview</string>
 </resources>

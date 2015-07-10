@@ -27,6 +27,9 @@ public class PreviewActivity extends RoboActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.menu_camera_preview, menu);
+
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setIcon(R.mipmap.openrtm_small_logo);
         return true;
     }
 

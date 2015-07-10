@@ -49,11 +49,17 @@ public class RTMCamera {
     @InjectResource(R.string.streaming_key)
     private String streamingKey;
 
-    private Camera camera;
-    private HandlerThread handlerThread;
-    private Handler handler;
+    private Camera camera = null;
 
-    public Camera.Size imageSize;
+    private HandlerThread handlerThread = null;
+    private Handler handler = null;
+
+    private List<Camera.Size> supportedSizes = null;
+    private Camera.Size currentSize = null;
+
+    public volatile int sizeIndex = 1;
+    public volatile double aspectRatio = 1.5;
+    public volatile boolean perpendicular = false;
 
     public int getNumberOfCameras() {
         return Camera.getNumberOfCameras();
@@ -75,31 +81,48 @@ public class RTMCamera {
                 camera = setUpCamera();
 
                 if (camera != null) {
-                    Camera.Parameters parameters = camera.getParameters();
-                    imageSize = parameters.getPreviewSize();
                     callback.opened();
                 }
             }
         });
     }
 
+    public CharSequence[] getSupportedImageSizes() {
+
+        if (camera == null) {
+            return new CharSequence[0];
+        }
+
+        CharSequence[] entries = new CharSequence[supportedSizes.size()];
+
+        for(int i = 0; i < supportedSizes.size(); i++) {
+            entries[i] = String.format("%s x %s", supportedSizes.get(i).width, supportedSizes.get(i).height);
+        }
+
+        return entries;
+    }
+
     private Camera setUpCamera() {
 
         Camera device = null;
+
         try {
             if (getNumberOfCameras() > 1) {
+
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(application);
 
                 int cameraNo = Integer.parseInt(preferences.getString(cameraKey, "0"));
 
                 device = Camera.open(cameraNo);
+
             } else {
+
                 device = Camera.open();
             }
 
-            device.setPreviewCallback(sendImage);
-
             applyPreferences(device);
+
+            device.setPreviewCallback(sendImage);
 
             rotateCamera(device);
 
@@ -113,14 +136,17 @@ public class RTMCamera {
     private void applyPreferences(Camera device) {
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(application);
-        int size = Integer.parseInt(preferences.getString(videoSizeKey, "1"));
 
         Camera.Parameters parameters = device.getParameters();
 
-        List<Camera.Size> supportedSizes = parameters.getSupportedPreviewSizes();
-        int index = (2-size)*((supportedSizes.size()-1)/2);
-        Camera.Size selectedSize = supportedSizes.get(index);
-        parameters.setPreviewSize(selectedSize.width, selectedSize.height);
+        supportedSizes = parameters.getSupportedPreviewSizes();
+        String defaultIndex = String.format("%s", supportedSizes.size() / 2);
+
+        sizeIndex = Integer.parseInt(preferences.getString(videoSizeKey, defaultIndex));
+        currentSize = supportedSizes.get(sizeIndex);
+        aspectRatio = (double)currentSize.width/(double)currentSize.height;
+
+        parameters.setPreviewSize(currentSize.width, currentSize.height);
 
         device.setParameters(parameters);
 
@@ -133,12 +159,16 @@ public class RTMCamera {
 
         if(configuration.orientation == Surface.ROTATION_0) {
             device.setDisplayOrientation(0);
+            perpendicular = false;
         } else if(configuration.orientation == Surface.ROTATION_90) {
             device.setDisplayOrientation(90);
+            perpendicular = true;
         } else if(configuration.orientation == Surface.ROTATION_180) {
             device.setDisplayOrientation(180);
+            perpendicular = false;
         } else if(configuration.orientation == Surface.ROTATION_270) {
             device.setDisplayOrientation(270);
+            perpendicular = true;
         }
     }
 
@@ -180,7 +210,6 @@ public class RTMCamera {
         webClient.initialize();
 
         camera.startPreview();
-
         canSend = true;
     }
 
@@ -212,7 +241,7 @@ public class RTMCamera {
             canSend = false;
 
             if (webClient.initialized) {
-                webClient.postImage(data, imageSize, responseCallback);
+                webClient.postImage(data, currentSize, responseCallback);
             }
         }
     };

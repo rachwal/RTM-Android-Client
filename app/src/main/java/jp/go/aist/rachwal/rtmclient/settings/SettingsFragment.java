@@ -57,8 +57,27 @@ public class SettingsFragment extends RoboPreferenceFragment implements SharedPr
         SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
 
         for (int i = 0; i < keys.length; i++) {
-           updateSummary(sharedPreferences, keys[i]);
+            updateSummary(sharedPreferences, keys[i]);
         }
+
+        updateSupportedImageSizes(true);
+    }
+
+    private void updateSupportedImageSizes(boolean setSizeCameraIndex) {
+        ListPreference preference = (ListPreference) findPreference(videoSizeKey);
+        CharSequence[] entries = camera.getSupportedImageSizes();
+        preference.setEntries(entries);
+        CharSequence[] entryValues = new CharSequence[entries.length];
+        for (int i = 0; i < entries.length; i++) {
+            entryValues[i] = String.format("%s", i);
+        }
+        preference.setEntryValues(entryValues);
+        if (setSizeCameraIndex) {
+            preference.setValueIndex(camera.sizeIndex);
+        }
+        SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
+        updateSummary(sharedPreferences, videoSizeKey);
+
     }
 
     @Override
@@ -66,6 +85,9 @@ public class SettingsFragment extends RoboPreferenceFragment implements SharedPr
         super.onResume();
 
         SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
+
+        updateSupportedImageSizes(false);
+
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -95,7 +117,13 @@ public class SettingsFragment extends RoboPreferenceFragment implements SharedPr
             return;
         }
 
-        if (key.equals(cameraKey) || key.equals(videoSizeKey) || key.equals(videoQualityKey)) {
+        if (key.equals(cameraKey)) {
+            ListPreference preference = (ListPreference)findPreference(key);
+            preference.setSummary(preference.getEntry());
+            return;
+        }
+
+        if (key.equals(videoSizeKey) || key.equals(videoQualityKey)) {
             ListPreference preference = (ListPreference)findPreference(key);
             preference.setSummary(preference.getEntry());
             return;
