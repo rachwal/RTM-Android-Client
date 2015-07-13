@@ -7,6 +7,7 @@ package jp.go.aist.rachwal.rtmclient.preview;
 
 import android.app.Application;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -52,7 +53,6 @@ public class PreviewFragment extends RoboFragment {
         super.onViewCreated(view, savedInstanceState);
 
         holder = cameraPreview.getHolder();
-        holder.addCallback(resizePreview);
     }
 
     @Override
@@ -71,12 +71,17 @@ public class PreviewFragment extends RoboFragment {
 
     private void stopPreview() {
 
+        holder.removeCallback(resizePreview);
+
         camera.stopPreview();
         camera.release();
     }
 
     private void startPreview() {
-       camera.open(cameraCallback);
+        initializationFinished = false;
+        holder.addCallback(resizePreview);
+
+        camera.open(cameraCallback);
     }
 
     private RTMCameraCallback cameraCallback = new RTMCameraCallback() {
@@ -84,20 +89,32 @@ public class PreviewFragment extends RoboFragment {
         @Override
         public void opened() {
 
-            camera.setPreviewDisplay(holder);
             camera.startPreview();
+            camera.setPreviewDisplay(holder);
+            initializationFinished = true;
         }
     };
 
+    private volatile boolean initializationFinished;
     private SurfaceHolder.Callback resizePreview = new SurfaceHolder.Callback() {
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
+            final Handler handler = new Handler();
+            while (!initializationFinished) {
 
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                    }
+                }, 100);
+            }
+            resizePreview();
         }
 
         @Override
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            resizePreview();
+
         }
 
 
@@ -116,31 +133,12 @@ public class PreviewFragment extends RoboFragment {
         display.getMetrics(metrics);
 
         if (camera.perpendicular) {
-            perpendicularResize(params, metrics);
-        } else {
-            parallelResize(params, metrics);
-        }
-    }
-
-    private void perpendicularResize(ViewGroup.LayoutParams params, DisplayMetrics metrics) {
-        double frameAspectRatio = (double) metrics.heightPixels / (double) metrics.widthPixels;
-        if (frameAspectRatio < camera.aspectRatio) {
             params.width = metrics.widthPixels;
             params.height = (int) ((double) metrics.widthPixels * camera.aspectRatio);
         } else {
-            params.width = (int) ((double) metrics.heightPixels / camera.aspectRatio);
-            params.height = metrics.heightPixels;
+            params.height = metrics.widthPixels;
+            params.width = (int) ((double) metrics.widthPixels * camera.aspectRatio);
         }
     }
 
-    private void parallelResize(ViewGroup.LayoutParams params, DisplayMetrics metrics) {
-        double frameAspectRatio = (double) metrics.heightPixels / (double) metrics.widthPixels;
-        if (frameAspectRatio < camera.aspectRatio) {
-            params.width = metrics.heightPixels;
-            params.height = (int) ((double) metrics.heightPixels / camera.aspectRatio);
-        } else {
-            params.width = metrics.widthPixels;
-            params.height = (int) ((double) metrics.widthPixels * camera.aspectRatio);
-        }
-    }
 }

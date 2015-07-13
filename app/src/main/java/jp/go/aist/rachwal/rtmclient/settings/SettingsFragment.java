@@ -6,11 +6,14 @@
 package jp.go.aist.rachwal.rtmclient.settings;
 
 import android.content.SharedPreferences;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 
 import com.google.inject.Inject;
+
+import java.util.List;
 
 import jp.go.aist.rachwal.rtmclient.R;
 import jp.go.aist.rachwal.rtmclient.camera.RTMCamera;
@@ -65,7 +68,7 @@ public class SettingsFragment extends RoboPreferenceFragment implements SharedPr
 
     private void updateSupportedImageSizes(boolean setSizeCameraIndex) {
         ListPreference preference = (ListPreference) findPreference(videoSizeKey);
-        CharSequence[] entries = camera.getSupportedImageSizes();
+        CharSequence[] entries = getSupportedImageSizes();
         preference.setEntries(entries);
         CharSequence[] entryValues = new CharSequence[entries.length];
         for (int i = 0; i < entries.length; i++) {
@@ -77,7 +80,22 @@ public class SettingsFragment extends RoboPreferenceFragment implements SharedPr
         }
         SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
         updateSummary(sharedPreferences, videoSizeKey);
+    }
 
+    private CharSequence[] getSupportedImageSizes() {
+        List<Camera.Size> supportedSizes = camera.supportedSizes;
+
+        if (supportedSizes == null || supportedSizes.size() == 0) {
+            return new CharSequence[0];
+        }
+
+        CharSequence[] entries = new CharSequence[supportedSizes.size()];
+
+        for(int i = 0; i < supportedSizes.size(); i++) {
+            entries[i] = String.format("%s x %s", supportedSizes.get(i).width, supportedSizes.get(i).height);
+        }
+
+        return entries;
     }
 
     @Override
@@ -126,7 +144,21 @@ public class SettingsFragment extends RoboPreferenceFragment implements SharedPr
         if (key.equals(videoSizeKey) || key.equals(videoQualityKey)) {
             ListPreference preference = (ListPreference)findPreference(key);
             preference.setSummary(preference.getEntry());
+
+            updateAspectRatio(sharedPreferences);
+        }
+    }
+
+    private void updateAspectRatio(SharedPreferences sharedPreferences) {
+        List<Camera.Size> supportedSizes = camera.supportedSizes;
+
+        if (supportedSizes == null || supportedSizes.size() == 0) {
             return;
         }
+
+        String defaultIndex = String.format("%s", supportedSizes.size() / 2);
+        int sizeIndex = Integer.parseInt(sharedPreferences.getString(videoSizeKey, defaultIndex));
+        Camera.Size currentSize = supportedSizes.get(sizeIndex);
+        camera.aspectRatio = (double)currentSize.width / (double) currentSize.height;
     }
 }

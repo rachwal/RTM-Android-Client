@@ -54,12 +54,12 @@ public class RTMCamera {
     private HandlerThread handlerThread = null;
     private Handler handler = null;
 
-    private List<Camera.Size> supportedSizes = null;
+    public List<Camera.Size> supportedSizes = null;
     private Camera.Size currentSize = null;
 
-    public volatile int sizeIndex = 1;
-    public volatile double aspectRatio = 1.5;
-    public volatile boolean perpendicular = false;
+    public int sizeIndex = 1;
+    public double aspectRatio;
+    public boolean perpendicular = false;
 
     public int getNumberOfCameras() {
         return Camera.getNumberOfCameras();
@@ -87,21 +87,6 @@ public class RTMCamera {
         });
     }
 
-    public CharSequence[] getSupportedImageSizes() {
-
-        if (camera == null) {
-            return new CharSequence[0];
-        }
-
-        CharSequence[] entries = new CharSequence[supportedSizes.size()];
-
-        for(int i = 0; i < supportedSizes.size(); i++) {
-            entries[i] = String.format("%s x %s", supportedSizes.get(i).width, supportedSizes.get(i).height);
-        }
-
-        return entries;
-    }
-
     private Camera setUpCamera() {
 
         Camera device = null;
@@ -121,10 +106,10 @@ public class RTMCamera {
             }
 
             applyPreferences(device);
-
-            device.setPreviewCallback(sendImage);
-
             rotateCamera(device);
+
+            device.setPreviewCallback(null);
+            device.setPreviewCallback(sendImage);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -136,6 +121,7 @@ public class RTMCamera {
     private void applyPreferences(Camera device) {
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(application);
+        streaming = preferences.getBoolean(streamingKey, false);
 
         Camera.Parameters parameters = device.getParameters();
 
@@ -144,13 +130,11 @@ public class RTMCamera {
 
         sizeIndex = Integer.parseInt(preferences.getString(videoSizeKey, defaultIndex));
         currentSize = supportedSizes.get(sizeIndex);
-        aspectRatio = (double)currentSize.width/(double)currentSize.height;
+        aspectRatio = (double)currentSize.width / (double) currentSize.height;
 
         parameters.setPreviewSize(currentSize.width, currentSize.height);
 
         device.setParameters(parameters);
-
-        streaming = preferences.getBoolean(streamingKey, false);
     }
 
     private void rotateCamera(Camera device) {
